@@ -55,15 +55,15 @@ object Room {
 
 class Room(val roomNumber: Int) extends Actor {
 
-  private[this] var members = Set.empty[String]
+  private[this] var members = List.empty[Member]
   private[this] val (enumerator, channel) = Concurrent.broadcast[JsValue]
 
   def receive = {
     case Join(username) => {
-      if(members.contains(username)) {
+      if(members.contains(Member(username))) {
         sender ! CannotConnect("This username is already used")
       } else {
-        members = members + username
+        members = Member(username) :: members
         sender ! Connected(enumerator)
         notifyAll("join", username, JsString("has entered the room"))
       }
@@ -72,12 +72,12 @@ class Room(val roomNumber: Int) extends Actor {
       notifyAll("talk", username, JsString(text))
     }
     case Quit(username) => {
-      members = members - username
+      members = members.filterNot(_.name == username)
       notifyAll("quit", username, JsString("has left the room"))
       if (members.isEmpty) Lobby.checkOut(roomNumber)
     }
     case Members(username) => {
-      notifyAll("members", username, JsArray(members.toList.map(JsString)));
+      notifyAll("members", username, JsArray(members.map{ m => JsString(m.name) }))
     }
   }
 
@@ -93,10 +93,19 @@ class Room(val roomNumber: Int) extends Actor {
   }
 }
 
+case class Member(val name: String) {
+  var point: Option[Int] = None
+}
+
 case class Join(username: String)
 case class Quit(username: String)
 case class Talk(username: String, text: String)
 case class Members(username: String)
+
+case class Bet(username: String, point: Int)
+
+case class ShowDown()
+case class Reset()
 
 case class Connected(enumerator:Enumerator[JsValue])
 case class CannotConnect(msg: String)
