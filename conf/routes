@@ -3,9 +3,11 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
-GET     /room                       controllers.Application.chatRoom(username: Option[String] ?= None)
-GET     /room/chat                  controllers.Application.chat(username)
+GET         /                    controllers.Application.index
+POST        /room                controllers.Application.reserve
+GET         /room                controllers.Application.knock(roomNumber: Option[Int], userName: Option[String])
+GET         /room/:id            controllers.Application.enter(id: Int)
+GET         /room/:id/socket     controllers.Application.socket(id: Int, userName: String)
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET         /assets/*file        controllers.Assets.at(path="/public", file)

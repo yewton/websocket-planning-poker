@@ -53,8 +53,12 @@ body {
     color: #888;
 }
 
-#username {
-    width: 200px;
+#userName {
+    width: 150px;
+}
+
+#roomNumber {
+    width: 100px;
 }
 
 #main {

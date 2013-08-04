@@ -1,5 +1,4 @@
 @(connected: Option[String])(content: Html)
-
 <!DOCTYPE html>
 
 <html>
@@ -23,12 +22,7 @@
                             <a href="@routes.Application.index()">Disconnect</a>
                         </p>
                     }.getOrElse {
-                        <form action="@routes.Application.chatRoom()" class="pull-right">
-                            <input id="username" name="username" class="input-small" type="text" placeholder="Username">
-                            <button class="btn" type="submit">Sign in</button>
-                        </form>
                     }
-                    
                 </div>
             </div>
         </div>

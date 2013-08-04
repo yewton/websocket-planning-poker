@@ -18,5 +18,24 @@
             To start, choose a username and sign in using the top right form.
         </p>
     </div>
-    
+
+    <ul class="unstyled">
+        <li>
+            Join the existing room
+            <form action="/room" method="GET">
+                <input id="userName"   name="userName"   class="input-small" type="text" placeholder="Username">
+                <input id="roomNumber" name="roomNumber" class="input-small" type="text" placeholder="roomNumber">
+                <button class="btn" type="submit">Join</button>
+            </form>
+        </li>
+        <li>or</li>
+        <li>
+            Create a room
+            <form action="/room" method="POST">
+                <input id="userName" name="userName" class="input-small" type="text" placeholder="Username">
+                <button class="btn" type="submit">Create</button>
+            </form>
+        </li>
+    </ul>
+
 }
