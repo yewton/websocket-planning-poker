@@ -3,7 +3,7 @@
 @main(Some(userName)) {
     
     <div class="page-header">
-        <h1>Room @roomNumber <small>You are chatting as @userName</small></h1>
+        <h1>Room @roomNumber <small>You are playing as @userName</small></h1>
     </div>
     
     <div id="onError" class="alert-message error">
@@ -35,7 +35,7 @@
     
         $(function() {
             
-			var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
+            var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
             var chatSocket = new WS("@routes.Application.socket(roomNumber, userName).webSocketURL()");
 
             var sendMessage = function(kind, obj) {
@@ -175,7 +175,5 @@
                $("button.hands").attr("disabled", true);
             });
         })
-    
     </script>
-    
 }
