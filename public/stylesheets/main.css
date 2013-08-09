@@ -53,6 +53,24 @@ body {
     color: #888;
 }
 
+button.hands {
+    width: 60px;
+    height: 84px;
+    border: 2px solid black;
+    float: left;
+    margin: 4px;
+    font-size: x-large;
+    text-align: center;
+    border-radius: 8px;
+    background-color: #eeeeee;
+}
+
+.clear {
+    float: none;
+    clear: both;
+    display: none;
+}
+
 #userName {
     width: 150px;
 }
@@ -82,6 +100,65 @@ body {
     right: 0;
     width: auto;
     height: 40px
+}
+
+#handsField {
+    overflow: hidden;
+}
+
+#cards {
+    list-style: none;
+    width: auto;
+    overflow: hidden;
+}
+
+#cards div.card {
+    width: 100px;
+    height: 140px;
+    border: 2px solid black;
+    float: left;
+    margin: 4px;
+    font-size: xx-large;
+    text-align: center;
+    line-height: 140px;
+    border-radius: 10px;
+}
+
+#cards div.opend {
+    background-color: white;
+}
+
+#cards div.closed {
+    color: white;
+    background-color: #0064cd;
+}
+
+#cards div.undetermined {
+    opacity: 0.5;
+}
+
+#result {
+    padding: 10px;
+    display: none;
+    font-size: xx-large;
+}
+
+button.controller {
+    font-size: xx-large;
+    padding: 10px;
+    width: 250px;
+    border: black solid 2px;
+    border-radius: 10px;
+}
+
+button.reset {
+    background-color: #f00;
+    color: white;
+}
+
+button.showdown {
+    background-color: #c7eefe;
+    color: black;
 }
 
 .message {

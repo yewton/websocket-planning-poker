@@ -28,7 +28,7 @@ object Room {
         // Create an Iteratee to consume the feed
         val iteratee = Iteratee.foreach[JsValue] { event =>
           implicit val from = username
-          sendMessage(event)
+          handleEvent(event)
         }.mapDone { _ =>
           default ! Quit(username)
         }
@@ -43,12 +43,16 @@ object Room {
     }
   }
 
-  def sendMessage(event: JsValue)(implicit default: ActorRef, from: String) {
+  def handleEvent(event: JsValue)(implicit default: ActorRef, from: String) {
     val body: JsValue = (event \ "body")
     default ! ((event \ "kind").as[String] match {
-      case "talk"    => Talk(from, body.as[String])
-      case "members" => Members(from)
-      case e         => throw new IllegalArgumentException(e)
+      case "talk"     => Talk(from, body.as[String])
+      case "members"  => Members(from)
+      case "bet"      => Bet(from, body.as[String].toFloat)
+      case "cards"    => Cards(from)
+      case "showDown" => ShowDown()
+      case "reset"    => Reset()
+      case e          => throw new IllegalArgumentException(e)
     })
   }
 }
@@ -57,6 +61,8 @@ class Room(val roomNumber: Int) extends Actor {
 
   private[this] var members = List.empty[Member]
   private[this] val (enumerator, channel) = Concurrent.broadcast[JsValue]
+
+  private[this] var up = false
 
   def receive = {
     case Join(username) => {
@@ -79,6 +85,47 @@ class Room(val roomNumber: Int) extends Actor {
     case Members(username) => {
       notifyAll("members", username, JsArray(members.map{ m => JsString(m.name) }))
     }
+    case Cards(username) => notifyCards
+    case Bet(username, point) => {
+      play.Logger.debug(s"$username: $point")
+      members.find(_.name == username).map { m =>
+        m.point = Some(point)
+      }
+      notifyCards
+    }
+    case ShowDown() => {
+      up = true
+      notifyCards
+    }
+    case Reset() => {
+      up = false
+      members.map(_.point = None)
+      notifyCards
+    }
+  }
+
+  def notifyCards = {
+    val v = members.map { m =>
+      val p = m.point match {
+        case Some(i) => if (up) JsNumber(i) else JsBoolean(true)
+        case None    => JsNull
+      }
+      val s = Seq(
+        "user"  -> JsString(m.name),
+        "point" -> p)
+      JsObject(s)
+    }
+    val total = members.map(_.point.getOrElse(0f)).sum
+    val ave = total / members.filterNot(_.point.isEmpty).length
+    val result = Seq(
+      "average" -> JsString(ave.toString),
+      "max"     -> JsString(members.map(_.point.getOrElse(-1f)).max.toString),
+      "min"     -> JsString(members.map(_.point.getOrElse(999f)).min.toString)
+    )
+    val r = Seq(
+      "up"    -> JsBoolean(up),
+      "cards" -> JsArray(v)) ++ (if (up) result else Seq())
+    notifyAll("cards", "", JsObject(r))
   }
 
   def notifyAll(kind: String, user: String, body: JsValue) {
@@ -94,7 +141,7 @@ class Room(val roomNumber: Int) extends Actor {
 }
 
 case class Member(val name: String) {
-  var point: Option[Int] = None
+  var point: Option[Float] = None
 }
 
 case class Join(username: String)
@@ -102,7 +149,8 @@ case class Quit(username: String)
 case class Talk(username: String, text: String)
 case class Members(username: String)
 
-case class Bet(username: String, point: Int)
+case class Bet(username: String, point: Float)
+case class Cards(username: String)
 
 case class ShowDown()
 case class Reset()

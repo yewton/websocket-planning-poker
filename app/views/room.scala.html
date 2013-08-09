@@ -3,7 +3,7 @@
 @main(Some(userName)) {
     
     <div class="page-header">
-        <h1>Welcome to the chat room <small>You are chatting as @userName</small></h1>
+        <h1>Room @roomNumber <small>You are chatting as @userName</small></h1>
     </div>
     
     <div id="onError" class="alert-message error">
@@ -11,12 +11,18 @@
             <strong>Oops!</strong> <span></span>
         </p>
     </div>
-    
+
     <div id="onChat" class="row">
         <div class="span10" id="main">
-            <div id="messages">
+            <div id="cards"></div>
+            <div id="result"></div>
+            <hr />
+            <div id="handsField"></div>
+            <hr />
+            <div id="controlPanel">
+                <button type="button" id="showdownButton" class="controller showdown">Show Down</button>
+                <button type="button" id="resetButton" class="controller reset">Reset</button>
             </div>
-            <textarea id="talk"></textarea>
         </div>
         <div class="span4">
             <h2>Members</h2>
@@ -31,8 +37,9 @@
             
 			var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket;
             var chatSocket = new WS("@routes.Application.socket(roomNumber, userName).webSocketURL()");
-            
+
             var sendMessage = function(kind, obj) {
+                console.log(chatSocket)
                 chatSocket.send(JSON.stringify(
                     {
                         kind: kind,
@@ -41,14 +48,39 @@
                 ));
             };
 
-            var talk = function() {
-                sendMessage("talk", $("#talk").val());
-                $("#talk").val('');
+            var hands = [
+                {k: 0, v: "0"}, {k: 0.5, v: "1/2"}, {k: 1, v: "1"}, {k: 2, v: "2"}, {k: 3, v: "3"}, {k: 5, v: "5"}, {k: 8, v: "8"},
+                {k: 13, v: "13"}, {k: 20, v: "20"}, {k: 40, v: "40"}, {k: 100, v: "100"}, {k: -1, v: "?"}, {k: 999, v: "☕"}
+            ];
+            for(var i = 0; i < hands.length; ++i) {
+                var button = $("<button></button>")
+                button.text(hands[i].v);
+                button.attr("type", "button");
+                button.val(hands[i].k);
+                button.addClass("hands");
+                button.click(function() {
+                    console.log("button: "+ ($(this).val()));
+                    sendMessage("bet", $(this).val());
+                });
+                $("#handsField").append(button);
             };
+            $("#handsField").append($('<div class="clear"></div>'))
 
             var members = function() {
-                sendMessage("members", {})
+                sendMessage("members", {});
             };
+
+            var cards = function() {
+                sendMessage("cards", {});
+            }
+
+            var showDown = function() {
+                sendMessage("showDown", {});
+            }
+
+            var reset = function() {
+                sendMessage("reset", {});
+            }
             
             var receiveEvent = function(event) {
                 var data = JSON.parse(event.data);
@@ -70,20 +102,6 @@
             }
 
             var handleMessage = function(kind, user, body) { switch(kind) {
-                case "talk": case "join": case "quit":
-                    // Create the message element
-                    var el = $('<div class="message"><span></span><p></p></div>');
-                    $("span", el).text(user);
-                    $("p", el).text(body);
-                    $(el).addClass(kind);
-                    if(user == '@userName') $(el).addClass('me');
-                    $('#messages').append(el);
-                    switch(kind) {
-                        case "join": case "quit":
-                            members();
-                            break;
-                    }
-                    break;
                 case "members":
                     // Update the members list
                     $("#members").html('');
@@ -91,19 +109,71 @@
                         $("#members").append('<li>' + this + '</li>')
                     });
                     break;
+                case "cards":
+                    var cards = $("#cards");
+                    cards.html('');
+                    $(body.cards).each(function() {
+                        var card = $("<div></div>");
+                        card.addClass("card");
+                        if (body.up) {
+                            if (this.point) {
+                                switch(this.point) {
+                                    case -1: card.html("?"); break;
+                                    case 999: card.html("☕"); break;
+                                    default: card.html(this.point);
+                                }
+                            } else {
+                                card.html("???");
+                            }
+                            card.addClass("opened");
+                        } else {
+                            card.html("♨");
+                            if (!!!this.point) {
+                                card.addClass("undetermined");
+                            }
+                            card.addClass("closed");
+                        }
+                        cards.append(card)
+                    });
+                    cards.append('<div class="clear"></div>');
+                    if (body.up) {
+                        // this should be in server side
+                        var f = function(n) {
+                            if (n <= -1.0) return "???"
+                            else if (999.0 <= n) return "???"
+                            else return n
+                        };
+                        var ave = f(body.average);
+                        var max = f(body.max);
+                        var min = f(body.min);
+                        $("#result").show();
+                        $("#result").html(
+                            "Ave: " + ave + " " +
+                            "Max: " + max + " " +
+                            "Min: " + min + " "
+                        );
+                    } else {
+                        $("#result").hide();
+                    }
+                    break;
+                default: console.log("Unknown event: "+kind);
             }}
-            
-            var handleReturnKey = function(e) {
-                if(e.charCode == 13 || e.keyCode == 13) {
-                    e.preventDefault()
-                    talk()
-                } 
-            }
-            
-            $("#talk").keypress(handleReturnKey)
-            
+
             chatSocket.onmessage = receiveEvent
-            chatSocket.onopen = function () { members(); }
+            chatSocket.onopen = function () {
+                members();
+                cards();
+            }
+
+            $("#resetButton" ).click(function() {
+                sendMessage("reset", {});
+                $("button.hands").removeAttr("disabled");
+            });
+
+            $("#showdownButton").click(function() {
+               sendMessage("showDown", {});
+               $("button.hands").attr("disabled", true);
+            });
         })
     
     </script>

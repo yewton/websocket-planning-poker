@@ -61,7 +61,6 @@ class Lobby extends Actor {
     }
     case CheckIn(roomNumber) => {
       val roomActor: Option[ActorRef] = rooms.get(roomNumber)
-      play.Logger.debug(roomActor.toString)
       sender ! (roomActor match {
         case Some(actor) => Welcome(actor)
         case _ => Abort("This room is not reserved for you!")
