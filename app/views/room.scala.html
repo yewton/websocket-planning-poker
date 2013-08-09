@@ -115,24 +115,31 @@
                     $(body.cards).each(function() {
                         var card = $("<div></div>");
                         card.addClass("card");
+                        var point = $("<div></div>");
+                        point.addClass("point");
+                        var name = $("<div></div>");
+                        name.addClass("name");
                         if (body.up) {
                             if (this.point) {
                                 switch(this.point) {
-                                    case -1: card.html("?"); break;
-                                    case 999: card.html("☕"); break;
-                                    default: card.html(this.point);
+                                    case -1: point.html("?"); break;
+                                    case 999: point.html("☕"); break;
+                                    default: point.html(this.point);
                                 }
                             } else {
-                                card.html("???");
+                                point.html("???");
                             }
                             card.addClass("opened");
                         } else {
-                            card.html("♨");
+                            point.html("♨");
                             if (!!!this.point) {
                                 card.addClass("undetermined");
                             }
                             card.addClass("closed");
                         }
+                        name.html(this.user);
+                        card.append(point);
+                        card.append(name);
                         cards.append(card)
                     });
                     cards.append('<div class="clear"></div>');

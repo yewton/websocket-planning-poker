@@ -118,9 +118,6 @@ button.hands {
     border: 2px solid black;
     float: left;
     margin: 4px;
-    font-size: xx-large;
-    text-align: center;
-    line-height: 140px;
     border-radius: 10px;
 }
 
@@ -135,6 +132,19 @@ button.hands {
 
 #cards div.undetermined {
     opacity: 0.5;
+}
+
+#cards div div.point {
+    font-size: xx-large;
+    width: 100px;
+    text-align: center;
+    line-height: 100px;
+}
+
+#cards div div.name {
+    font-size: normal;
+    width: 100px;
+    text-align: center;
 }
 
 #result {
