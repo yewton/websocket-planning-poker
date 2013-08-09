@@ -167,6 +167,8 @@
                 members();
                 cards();
             }
+            chatSocket.onclose = function() { location.href = "@routes.Application.index()"; }
+            chatSocket.onerror = function() { location.href = "@routes.Application.index()"; }
 
             $("#resetButton" ).click(function() {
                 sendMessage("reset", {});

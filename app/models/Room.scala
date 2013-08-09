@@ -46,7 +46,6 @@ object Room {
   def handleEvent(event: JsValue)(implicit default: ActorRef, from: String) {
     val body: JsValue = (event \ "body")
     default ! ((event \ "kind").as[String] match {
-      case "talk"     => Talk(from, body.as[String])
       case "members"  => Members(from)
       case "bet"      => Bet(from, body.as[String].toFloat)
       case "cards"    => Cards(from)
@@ -74,12 +73,10 @@ class Room(val roomNumber: Int) extends Actor {
         notifyAll("join", username, JsString("has entered the room"))
       }
     }
-    case Talk(username, text) => {
-      notifyAll("talk", username, JsString(text))
-    }
     case Quit(username) => {
       members = members.filterNot(_.name == username)
-      notifyAll("quit", username, JsString("has left the room"))
+      self ! Members(username)
+      self ! Cards(username)
       if (members.isEmpty) Lobby.checkOut(roomNumber)
     }
     case Members(username) => {
@@ -153,7 +150,6 @@ case class Member(val name: String) {
 
 case class Join(username: String)
 case class Quit(username: String)
-case class Talk(username: String, text: String)
 case class Members(username: String)
 
 case class Bet(username: String, point: Float)
