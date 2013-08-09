@@ -115,12 +115,19 @@ class Room(val roomNumber: Int) extends Actor {
         "point" -> p)
       JsObject(s)
     }
-    val total = members.map(_.point.getOrElse(0f)).sum
-    val ave = total / members.filterNot(_.point.isEmpty).length
+    val validCards = members.map(_.point.getOrElse(-1f)).filter((i: Float) => (0f <= i && i < 999f))
+    val total = validCards.sum
+    val (ave, max, min) = if (0 < validCards.size) {
+      (
+        (total / validCards.length).toString,
+        validCards.max.toString,
+        validCards.min.toString
+      )
+    } else ("???", "???", "???")
     val result = Seq(
-      "average" -> JsString(ave.toString),
-      "max"     -> JsString(members.map(_.point.getOrElse(-1f)).max.toString),
-      "min"     -> JsString(members.map(_.point.getOrElse(999f)).min.toString)
+      "average" -> JsString(ave),
+      "max"     -> JsString(max),
+      "min"     -> JsString(min)
     )
     val r = Seq(
       "up"    -> JsBoolean(up),

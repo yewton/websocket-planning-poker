@@ -137,23 +137,19 @@
                     });
                     cards.append('<div class="clear"></div>');
                     if (body.up) {
-                        // this should be in server side
-                        var f = function(n) {
-                            if (n <= -1.0) return "???"
-                            else if (999.0 <= n) return "???"
-                            else return n
-                        };
-                        var ave = f(body.average);
-                        var max = f(body.max);
-                        var min = f(body.min);
+                        var ave = body.average;
+                        var max = body.max;
+                        var min = body.min;
                         $("#result").show();
                         $("#result").html(
                             "Ave: " + ave + " " +
                             "Max: " + max + " " +
                             "Min: " + min + " "
                         );
+                        $("button.hands").attr("disabled", true);
                     } else {
                         $("#result").hide();
+                        $("button.hands").removeAttr("disabled");
                     }
                     break;
                 default: console.log("Unknown event: "+kind);
@@ -167,12 +163,10 @@
 
             $("#resetButton" ).click(function() {
                 sendMessage("reset", {});
-                $("button.hands").removeAttr("disabled");
             });
 
             $("#showdownButton").click(function() {
                sendMessage("showDown", {});
-               $("button.hands").attr("disabled", true);
             });
         })
     </script>
