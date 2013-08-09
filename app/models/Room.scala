@@ -80,7 +80,7 @@ class Room(val roomNumber: Int) extends Actor {
       if (members.isEmpty) Lobby.checkOut(roomNumber)
     }
     case Members(username) => {
-      notifyAll("members", username, JsArray(members.map{ m => JsString(m.name) }))
+      notifyAll("members", username, JsArray(members.map{ m => JsString(m.escapedName) }))
     }
     case Cards(username) => notifyCards
     case Bet(username, point) => {
@@ -108,7 +108,7 @@ class Room(val roomNumber: Int) extends Actor {
         case None    => JsNull
       }
       val s = Seq(
-        "user"  -> JsString(m.name),
+        "user"  -> JsString(m.escapedName),
         "point" -> p)
       JsObject(s)
     }
@@ -146,6 +146,7 @@ class Room(val roomNumber: Int) extends Actor {
 
 case class Member(val name: String) {
   var point: Option[Float] = None
+  def escapedName = play.api.templates.HtmlFormat.escape(name).toString
 }
 
 case class Join(username: String)
